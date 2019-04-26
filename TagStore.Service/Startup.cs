@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TagStore.Service.Data;
+using Microsoft.EntityFrameworkCore.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace TagStore.Service
 {
@@ -25,12 +28,17 @@ namespace TagStore.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlite("Data Source=tagStoreItems.db"));
+            services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer(@"Server=.\SQLExpress;Database=tagStoreItems;Trusted_Connection=Yes;"));
+            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ShirtDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Data.Items.ItemsContext itemsContext)
         {
+            Data.Items.DbInitializer.Initialize(itemsContext);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
