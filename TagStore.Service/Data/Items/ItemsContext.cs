@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
 using TagStore.Service.Models.Items;
 
@@ -63,7 +64,6 @@ namespace TagStore.Service.Data.Items
             tagTypeNameEntity.HasKey(_ => new { _.TagId, _.Locale }); // PK
             tagTypeNameEntity.HasOne(_ => _.TagType                ); // FK to TagType
         }
-
     }
 
     public static class ItemsContextExtensions

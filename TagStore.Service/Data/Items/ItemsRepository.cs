@@ -11,6 +11,12 @@ namespace TagStore.Service.Data.Items
     public interface IItemsRepository
     {
         /// <summary>
+        /// Returns an IQueryable of all available Items
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<Item> FindItems();
+
+        /// <summary>
         /// Returns the specified Item
         /// </summary>
         /// <param name="itemId"></param>
@@ -18,21 +24,21 @@ namespace TagStore.Service.Data.Items
         Task<Item> GetItemAsync(Guid itemId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Returns all Tags attaches to the specified Item
+        /// Returns an IQueryable of all Tags attaches to the specified Item
         /// </summary>
         /// <param name="itemId"></param>
         /// <returns></returns>
         IQueryable<Tag> GetTags(Guid itemId);
 
         /// <summary>
-        /// Returns the TagTypes for all Tags attaches to the specified Item
+        /// Returns an IQueryable of the TagTypes for all Tags attaches to the specified Item
         /// </summary>
         /// <param name="itemId"></param>
         /// <returns></returns>
         IQueryable<TagType> GetTagTypes(Guid itemId);
 
         /// <summary>
-        /// Returns all TagTypeNames for all Tags of the specified Item
+        /// Returns an IQueryable of all TagTypeNames for all Tags of the specified Item
         /// 
         //  NOTE: Always returns the values for all available locales!
         /// </summary>
@@ -51,12 +57,21 @@ namespace TagStore.Service.Data.Items
         }
 
         /// <summary>
+        /// Returns an IQueryable of all available Items
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Item> FindItems()
+        {
+            return _context.Items;
+        }
+
+        /// <summary>
         /// Returns the specified Item
         /// </summary>
         /// <param name="itemId"></param>
         /// <returns></returns>
         public Task<Item> GetItemAsync(Guid itemId, CancellationToken cancellationToken = default(CancellationToken))
-            => _context.Items.FindAsync(itemId, cancellationToken);
+            => _context.Items.FindAsync(new object[] { itemId }, cancellationToken);
 
         /// <summary>
         /// Returns all Tags attaches to the specified Item

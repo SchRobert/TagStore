@@ -13,6 +13,8 @@ using Microsoft.Extensions.Options;
 using TagStore.Service.Data;
 using Microsoft.EntityFrameworkCore.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using TagStore.Service.Data.Items;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace TagStore.Service
 {
@@ -28,16 +30,41 @@ namespace TagStore.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlite("Data Source=tagStoreItems.db"));
-            services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer(@"Server=.\SQLExpress;Database=tagStoreItems;Trusted_Connection=Yes;"));
+            services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlite("Data Source=tagStoreItems.db"));
+            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer(@"Server=.\SQLExpress;Database=tagStoreItems;Trusted_Connection=Yes;"));
             //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ShirtDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
+
+            services.AddScoped<IItemsRepository, ItemsRepository>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "TagStore API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, Data.Items.ItemsContext itemsContext)
         {
             Data.Items.DbInitializer.Initialize(itemsContext);
+
+#if DEBUG
+            if (env.IsDevelopment())
+                Data.Items.DbInitializer.SeedTestingData(itemsContext);
+#endif
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TagStore API V1");
+                c.RoutePrefix = string.Empty; 
+            });
 
             if (env.IsDevelopment())
             {
