@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace TagStore.Service.Models.Items
 {
@@ -36,6 +37,13 @@ namespace TagStore.Service.Models.Items
 
         // navigation properties
 
+        /// <summary>
+        /// Reference back to the associated TagType.
+        /// 
+        /// NOTE: This field is not serialized to avoid a JsonSerializationException(Self referencing loop detected) 
+        ///       when serializing Items with Tags
+        /// </summary>
+        [JsonIgnore]
         public virtual TagType TagType { get; set; }
     }
 }

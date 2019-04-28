@@ -1,54 +1,39 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using TagStore.Service.Models.Items;
 
 namespace TagStore.Service.Data.Items
 {
     public interface IItemsRepository
     {
+        //ItemsContext Context { get; } // for development only
+
         /// <summary>
         /// Returns an IQueryable of all available Items
         /// </summary>
+        /// <param name="includeTags">If true return also all available Tags for each item.</param>
         /// <returns></returns>
-        IQueryable<Item> FindItems();
+        IQueryable<Item> FindItems(bool includeTags = false);
 
         /// <summary>
-        /// Returns the specified Item
+        /// Returns an IQueryable of all available TagTypes
         /// </summary>
-        /// <param name="itemId"></param>
+        ///// <param name="includeNames">If true return also all available Names for each TagType.</param>
         /// <returns></returns>
-        Task<Item> GetItemAsync(Guid itemId, CancellationToken cancellationToken = default(CancellationToken));
+        IQueryable<TagType> FindTagTypes(bool includeNames = false);
 
         /// <summary>
-        /// Returns an IQueryable of all Tags attaches to the specified Item
+        /// Returns an IQueryable of all available TagTypes for the Tags of the given Item
         /// </summary>
-        /// <param name="itemId"></param>
+        ///// <param name="includeNames">If true return also all available Names for each TagType.</param>
         /// <returns></returns>
-        IQueryable<Tag> GetTags(Guid itemId);
-
-        /// <summary>
-        /// Returns an IQueryable of the TagTypes for all Tags attaches to the specified Item
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        IQueryable<TagType> GetTagTypes(Guid itemId);
-
-        /// <summary>
-        /// Returns an IQueryable of all TagTypeNames for all Tags of the specified Item
-        /// 
-        //  NOTE: Always returns the values for all available locales!
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        IQueryable<TagTypeName> GetTagTypeName(Guid itemId);
+        IQueryable<TagType> FindTagTypes(Guid itemId, bool includeNames = false);
     }
 
     public class ItemsRepository : IItemsRepository
     {
+        //public ItemsContext Context => _context;
         readonly ItemsContext _context;
 
         public ItemsRepository(ItemsContext context)
@@ -56,49 +41,28 @@ namespace TagStore.Service.Data.Items
             _context = context;
         }
 
-        /// <summary>
-        /// Returns an IQueryable of all available Items
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<Item> FindItems()
+        public IQueryable<Item> FindItems(bool includeTags = false)
         {
-            return _context.Items;
+            return includeTags
+                ? _context.Items.Include("Tags")
+                : _context.Items;
         }
 
-        /// <summary>
-        /// Returns the specified Item
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        public Task<Item> GetItemAsync(Guid itemId, CancellationToken cancellationToken = default(CancellationToken))
-            => _context.Items.FindAsync(new object[] { itemId }, cancellationToken);
+        public IQueryable<TagType> FindTagTypes(bool includeNames = false)
+        {
+            return includeNames
+                ? _context.TagTypes.Include("Names")
+                : _context.TagTypes;
+        }
 
-        /// <summary>
-        /// Returns all Tags attaches to the specified Item
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        public IQueryable<Tag> GetTags(Guid itemId) 
-            => _context.Tags.Where(_ => _.ItemId == itemId);
+        public IQueryable<TagType> FindTagTypes(Guid itemId, bool includeNames = false)
+        {
+            var tagIds = _context.Tags
+                .Where(_ => _.ItemId == itemId)
+                .Select(_ => _.TagId);
 
-        IQueryable<string> GetTagsIds(Guid itemId) => GetTags(itemId).Select(_ => _.TagId);
-
-        /// <summary>
-        /// Returns the TagTypes for all Tags attaches to the specified Item
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        public IQueryable<TagType> GetTagTypes(Guid itemId) 
-            => _context.TagTypes.Where(_ => GetTagsIds(itemId).Contains(_.TagId));
-
-        /// <summary>
-        /// Returns all TagTypeNames for all Tags of the specified Item
-        /// 
-        //  NOTE: Always returns the values for all available locales!
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        public IQueryable<TagTypeName> GetTagTypeName(Guid itemId) 
-            => _context.TagTypeNames.Where(_ => GetTagsIds(itemId).Contains(_.TagId));
+            return FindTagTypes(includeNames)
+                .Where(_ => tagIds.Contains(_.TagId));
+        }
     }
 }

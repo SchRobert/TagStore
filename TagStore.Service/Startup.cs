@@ -49,7 +49,6 @@ namespace TagStore.Service
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, Data.Items.ItemsContext itemsContext)
         {
             Data.Items.DbInitializer.Initialize(itemsContext);
-
 #if DEBUG
             if (env.IsDevelopment())
                 Data.Items.DbInitializer.SeedTestingData(itemsContext);

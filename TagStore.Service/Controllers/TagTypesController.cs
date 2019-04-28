@@ -14,58 +14,59 @@ namespace TagStore.Service.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ItemsController : ControllerBase
+    public class TagTypesController : ControllerBase
     {
         readonly IItemsRepository _repository;
 
-        public ItemsController(IItemsRepository repository)
+        public TagTypesController(IItemsRepository repository)
         {
             _repository = repository;
         }
 
-        // GET: api/Items
-        // GET: api/Items?includeTags=true
+        // GET: api/TagTypes
+        // GET: api/TagTypes?includeNames=true
         /// <summary>
-        /// Returns the found items.
+        /// Returns all defined TagTypes.
         /// </summary>
-        /// <param name="includeTags">If true return also all available Tags for each item.</param>
+        /// <param name="includeNames">If true return also all localized names for each tag.</param>
         /// <param name="cancellationToken">Optional token to cancel the operation</param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet()]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type= typeof(Item[]))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TagType[]))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<Item[]>> GetItems([FromQuery] bool includeTags = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ActionResult<TagType[]>> GetTagTypes([FromQuery] bool includeNames = false, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var items = await _repository.FindItems(includeTags).ToArrayAsync(cancellationToken);
+            var tagTypes = await _repository.FindTagTypes(includeNames).ToArrayAsync(cancellationToken);
 
-            if (true == items?.Any())
-                return Ok(items);
+            if (true == tagTypes?.Any())
+                return Ok(tagTypes);
 
             return NoContent();
         }
 
-        // GET: api/Items/00000000-0000-0000-0001-000000000001
-        // GET: api/Items/00000000-0000-0000-0001-000000000001?includeTags=true
+        // GET: api/TagTypes
+        // GET: api/TagTypes?includeNames=true
         /// <summary>
-        /// Returns a specific item.
+        /// Returns all defined TagTypes for a specified ItemId.
+        /// 
+        /// IMPROVE: Return 404 if the Item was not found and 204 if the item was found bus has no tags or the tags have no types.
         /// </summary>
-        /// <param name="itemId"></param>
-        /// <param name="includeTags">If true return also all available Tags for each item.</param>
+        /// <param name="includeNames">If true return also all localized names for each tag.</param>
         /// <param name="cancellationToken">Optional token to cancel the operation</param>
         /// <returns></returns>
         [HttpGet("{itemId}")]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type= typeof(Item))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Item>> GetItem(Guid itemId, [FromQuery] bool includeTags = false, CancellationToken cancellationToken = default(CancellationToken))
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TagType[]))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult<TagType[]>> GetTagTypes(Guid itemId, [FromQuery] bool includeNames = false, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var item = await _repository.FindItems(includeTags).SingleOrDefaultAsync(_ => _.ItemId == itemId, cancellationToken);
+            var tagTypes = await _repository.FindTagTypes(itemId, includeNames).ToArrayAsync(cancellationToken);
 
-            if (item == null)
-                return NotFound();
+            if (true == tagTypes?.Any())
+                return Ok(tagTypes);
 
-            return Ok(item);
+            return NoContent();
         }
 
         // PUT: api/Items/5

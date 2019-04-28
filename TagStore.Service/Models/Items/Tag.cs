@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace TagStore.Service.Models.Items
 {
@@ -11,6 +12,7 @@ namespace TagStore.Service.Models.Items
     public class Tag
     {
         // PK ItemId / TagId / Order
+        [JsonIgnore]
         public Guid ItemId { get; set; }
         public string TagId { get; set; }
         public int Order { get; set; }
@@ -21,7 +23,7 @@ namespace TagStore.Service.Models.Items
         public string Value { get; set; }
         public long ValueLong { get; set; }
         public decimal ValueDecimal { get; set; }
-        public DateTimeOffset ValueDate { get; set; }
+        public DateTimeOffset? ValueDate { get; set; }
 
         /// <summary>
         /// True if this tag is calculated by a parent object
@@ -29,6 +31,14 @@ namespace TagStore.Service.Models.Items
         public bool Virtual { get; set; }
 
         // navigation property
+
+        /// <summary>
+        /// Reference back to the associated Item.
+        /// 
+        /// NOTE: This field is not serialized to avoid a JsonSerializationException(Self referencing loop detected) 
+        ///       when serializing Items with Tags
+        /// </summary>
+        [JsonIgnore]
         public virtual Item Item { get; set; }
     }
 }
