@@ -15,6 +15,10 @@ using Microsoft.EntityFrameworkCore.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using TagStore.Service.Data.Items;
 using Swashbuckle.AspNetCore.Swagger;
+//using Microsoft.OData.Edm;
+//using Microsoft.AspNet.OData.Builder;
+using TagStore.Service.Models.Items;
+//using Microsoft.AspNet.OData.Extensions;
 
 namespace TagStore.Service
 {
@@ -35,8 +39,14 @@ namespace TagStore.Service
             //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ShirtDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
 
             services.AddScoped<IItemsRepository, ItemsRepository>();
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            //services.AddOData();
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                    options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                });
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
@@ -76,7 +86,22 @@ namespace TagStore.Service
             }
 
             app.UseHttpsRedirection();
-            app.UseMvc();
+            app.UseMvc(b =>
+            {
+                //b.MapODataServiceRoute("odata", "odata", GetEdmModel());
+            });
         }
+
+        // odata access not working
+        // see: https://devblogs.microsoft.com/odata/asp-net-core-odata-now-available/
+        //static IEdmModel GetEdmModel()
+        //{
+        //    var builder = new ODataConventionModelBuilder();
+        //    builder.EntitySet<Item>("Item");            
+        //    builder.EntitySet<Models.Items.Tag>("Tag");
+        //    builder.EntitySet<TagType>("TagType");
+        //    builder.EntitySet<TagTypeName>("TagTypeName");
+        //    return builder.GetEdmModel();
+        //}
     }
 }

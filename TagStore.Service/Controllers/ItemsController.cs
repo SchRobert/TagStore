@@ -68,6 +68,26 @@ namespace TagStore.Service.Controllers
             return Ok(item);
         }
 
+        /// <summary>
+        /// Returns items matching the tags query.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="includeTags">If true return also all available Tags for each item.</param>
+        /// <param name="cancellationToken">Optional token to cancel the operation</param>
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Item))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPost()]
+        public async Task<ActionResult<Item[]>> Find([FromBody] ItemsQuery query, [FromQuery] bool includeTags = false, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var items = await _repository.FindItems(query, includeTags).ToArrayAsync(cancellationToken);
+
+            if (true == items?.Any())
+                return Ok(items);
+
+            return NoContent();
+        }
+
         // PUT: api/Items/5
         //[HttpPut("{id}")]
         //public async Task<IActionResult> UpdateItem(Guid id, Item item)
