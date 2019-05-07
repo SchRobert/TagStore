@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Globalization;
 
 namespace TagStore.Service.Models.Items
 {
@@ -9,7 +10,7 @@ namespace TagStore.Service.Models.Items
     /// 
     /// For all Tags of the same order there may exist one TagType.
     /// </summary>
-    public class Tag
+    public class Tag : TagValue
     {
         // PK ItemId / TagId / Order
         [JsonIgnore]
@@ -18,17 +19,9 @@ namespace TagStore.Service.Models.Items
         public int Order { get; set; }
 
         /// <summary>
-        /// Current value of this Tag (can be string, int, float, ...)
+        /// If set, this tag is calculated by a parent object
         /// </summary>
-        public string Value { get; set; }
-        public long ValueLong { get; set; }
-        public decimal ValueDecimal { get; set; }
-        public DateTimeOffset? ValueDate { get; set; }
-
-        /// <summary>
-        /// True if this tag is calculated by a parent object
-        /// </summary>
-        public bool Virtual { get; set; }
+        public Guid? Source { get; set; }
 
         // navigation property
 

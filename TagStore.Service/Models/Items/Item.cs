@@ -11,7 +11,7 @@ namespace TagStore.Service.Models.Items
         /// </summary>
         File,
         /// <summary>
-        /// Specifies this item is a package (archive, ...)
+        /// Specifies this item is a package (archive, the parent of a video with multiples files, the folder of one tv-series...)
         /// </summary>
         Package,
         /// <summary>

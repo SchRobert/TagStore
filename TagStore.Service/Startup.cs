@@ -18,6 +18,7 @@ using Swashbuckle.AspNetCore.Swagger;
 //using Microsoft.OData.Edm;
 //using Microsoft.AspNet.OData.Builder;
 using TagStore.Service.Models.Items;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 //using Microsoft.AspNet.OData.Extensions;
 
 namespace TagStore.Service
@@ -34,16 +35,24 @@ namespace TagStore.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlite("Data Source=tagStoreItems.db"));
-            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer(@"Server=.\SQLExpress;Database=tagStoreItems;Trusted_Connection=Yes;"));
-            //services.AddDbContext<Data.Items.ItemsContext>(o => o.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ShirtDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
+            services.AddDbContext<Data.Items.ItemsContext>(o =>
+            {
+                //o.UseSqlite("Data Source=tagStoreItems.db");
+                //o.UseSqlServer(@"Server=.\SQLExpress;Database=tagStoreItems;Trusted_Connection=Yes;");
+                o.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=TagStoreItems;Trusted_Connection=True;MultipleActiveResultSets=true");
+
+                // throw if queries are executed in memory and not in SQL
+                o.ConfigureWarnings(w => w.Throw(RelationalEventId.QueryClientEvaluationWarning));
+            });
 
             services.AddScoped<IItemsRepository, ItemsRepository>();
+
             //services.AddOData();
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(options =>
                 {
+                    // serialize enum values as strings
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 });

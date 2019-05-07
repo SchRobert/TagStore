@@ -72,34 +72,36 @@ namespace TagStore.Service.Data.Items
                     return items.Where(i => i.Tags.Any(hasTag(query)));
 
                 case ItemsQuery.Operator.AND:
+                    var subItems = query.Items?.Where(_ => null != _)?.ToArray() ?? new ItemsQuery[0];
                     // TODO: Find a generic way to AND n-Items
-                    switch (query.Items?.Length ?? 0)
+                    switch (subItems.Length)
                     {
                         case 0:
                             return items;
-                        case 1:
-                            return items.Where(i => i.Tags.Any(hasTag(query.Items[0])));
+                        case 1: 
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])));
                         case 2:
-                            return items.Where(i => i.Tags.Any(hasTag(query.Items[0])) && i.Tags.Any(hasTag(query.Items[1])));
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])) && i.Tags.Any(hasTag(subItems[1])));
                         case 3:
-                            return items.Where(i => i.Tags.Any(hasTag(query.Items[0])) && i.Tags.Any(hasTag(query.Items[1])) && i.Tags.Any(hasTag(query.Items[2])));
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])) && i.Tags.Any(hasTag(subItems[1])) && i.Tags.Any(hasTag(subItems[2])));
                     }
-                    throw new NotImplementedException($"Currently AND-queries only with [0..3] items allowed but got: {query.Items?.Length}");
+                    throw new NotImplementedException($"Currently AND-queries only with [0..3] items allowed but got: {subItems.Length}");
 
                 case ItemsQuery.Operator.OR:
+                    subItems = query.Items?.Where(_ => null != _)?.ToArray() ?? new ItemsQuery[0];
                     // TODO: Find a generic way to OR n-Items
-                    switch (query.Items?.Length ?? 0)
+                    switch (subItems.Length)
                     {
                         case 0:
                             return items;
                         case 1:
-                        return items.Where(i => i.Tags.Any(hasTag(query.Items[0])));
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])));
                         case 2:
-                        return items.Where(i => i.Tags.Any(hasTag(query.Items[0])) || i.Tags.Any(hasTag(query.Items[1])));
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])) || i.Tags.Any(hasTag(subItems[1])));
                         case 3:
-                        return items.Where(i => i.Tags.Any(hasTag(query.Items[0])) || i.Tags.Any(hasTag(query.Items[1])) || i.Tags.Any(hasTag(query.Items[2])));
+                            return items.Where(i => i.Tags.Any(hasTag(subItems[0])) || i.Tags.Any(hasTag(subItems[1])) || i.Tags.Any(hasTag(subItems[2])));
                     }
-                    throw new NotImplementedException($"Currently AND-queries only with [0..3] items allowed but got: {query.Items?.Length}");
+                    throw new NotImplementedException($"Currently AND-queries only with [0..3] items allowed but got: {subItems.Length}");
 
                 default:
                     throw new InvalidOperationException($"Unknown operator '{query.Op}'");
@@ -140,7 +142,7 @@ namespace TagStore.Service.Data.Items
                     if (query.ValueDate.HasValue)
                         return t => t.TagId == query.TagId && t.ValueDate == query.ValueDate.Value;
 
-                    return t => t.TagId == query.TagId && t.Value == query.Value;
+                    return t => t.TagId == query.TagId && t.ValueString == query.Value;
 
                 default: // should never happended: otehr types are handled by the caller
                     throw new InvalidOperationException();
